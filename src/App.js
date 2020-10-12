@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 
 function Button(props){
@@ -7,45 +7,54 @@ function Button(props){
   );
 }
 
-// function AddTranslationForm(props){
+function SearchForm(props){
+  return (
+    <div className="searchArea">
+      <label htmlFor="search">Search for translations</label>
+      <input name="search" type="text" placeholder="Type here" onChange={props.search}></input>
+    </div>
+  );
+}
 
-//   return (
-//     <div className="add-area">
-//       <h1>Add your translation in the form below</h1>
-//       <form>
-//         <label htmlFor="swedish-word">Swedish word</label>
-//         <input name="swedish-word" type="text" placeholder="Häst"></input>
-//         <label htmlFor="english-word">English word</label>
-//         <input name="english-word" type="text" placeholder="Horse"></input>
-//         <Button text="Add translation" />
-//       </form>
+// function Translations(props) {
+//   return(
+//     <div itemID="translation-list">
+//       {props.list.map( (translation) => (
+        
+//       <li key={translation.id}><span>{translation.id} {translation.swedish}</span> = <span>{translation.english}</span> <span id={translation.id} className="delete" onClick={props.delete}>X</span></li>
+//       ))}
 //     </div>
 //   );
 // }
 
-// function SearchForm(props){
-//   return (
-//     <div className="searchArea">
-//       <label htmlFor="search">Search for translations</label>
-//       <input name="search" type="text" placeholder="Type here"></input>
-//       <Button text="Search" />
-//     </div>
-//   );
-// }
-
-// function SearchResult(props){
-//   return (
-//     <div className="listArea">
-//       <p>Search result will display here</p>
-//     </div>
-//   );
-// }
-
-function Translations(props) {
-  return(
+function DisplayTranslations(props){
+  const liRef = useRef(null);
+  if(props.searchFor !== ''){
+    if(props.result !== []){
+      return (
+        <div itemID="translation-list">
+          <p>Display search results here:</p>
+        </div>
+      );
+    } else {
+      return (
+        <p>No match...</p>
+      );
+    }
+  }
+  return (
     <div itemID="translation-list">
       {props.list.map( (translation) => (
-        <li key={translation.id}><span>{translation.swedish}</span> = <span>{translation.english}</span> <span className="delete" onClick={props.delete}>X</span></li>
+        <li
+          key={translation.id} 
+          ref={liRef}
+          // onMouseOver={ () => { console.log('mouse over', liRef.current) } }
+          // onMouseOut={ () => { console.log('mouse out', liRef.current) } }
+        >
+          <span>{translation.swedish}</span> = 
+          <span>{translation.english}</span> 
+          <span id={translation.id} className="delete" onClick={props.delete}>X</span>
+        </li>
       ))}
     </div>
   );
@@ -56,6 +65,18 @@ function App() {
   const [ translations, setTranslations ] = useState([]);
   const [ swedishWord, setSwedishWord ] = useState('');
   const [ englishWord, setEnglishWord ] = useState('');
+  let [ searchFor, setSearchFor ] = useState('');
+  const [ searchResult, setSearchResult ] = useState([]);
+
+  useEffect(() => {
+    let swedish, english;
+    const results = translations.filter(translation => {
+      swedish = translation.swedish.toLowerCase();
+      english = translation.english.toLowerCase();
+      swedish.includes(searchFor) || english.includes(searchFor);
+    });
+    setSearchResult(results);
+  }, [translations, searchFor]);
 
   function updateSwedishWord(e){
     setSwedishWord(e.target.value);
@@ -69,18 +90,26 @@ function App() {
     e.preventDefault();
     setTranslationID(translationID + 1); //Why doesn't this one add up? Why do I need to add 1 again below?
     const newTranslation = [{
-      id: translationID +1,
+      id: translationID + 1,
       swedish: swedishWord,
       english: englishWord
     }];
-
     setTranslations(translations.concat(newTranslation));
+    setSwedishWord('');
+    setEnglishWord('');
   }
 
   function deleteTranslation(e){
-    e.preventDefault();
-    console.log(e);
-    //translations.splice(e.id, 1);
+    const id = e.target.getAttribute("id");
+    setTranslations(translations.filter(translation => translation.id !== parseInt(id))); // TODO: Remove warnings!
+  }
+
+  function doSearch(e){
+    if (e.target.value.length >= 1) {
+      setSearchFor(searchFor = e.target.value.toLowerCase());
+    } else {
+      setSearchFor(searchFor =  '');
+    }
   }
 
   return (
@@ -109,16 +138,8 @@ function App() {
         </form>
       </div>
       
-      {/* <SearchForm /> */}
-      <div className="searchArea">
-        <label htmlFor="search">Search for translations</label>
-        <input name="search" type="text" placeholder="Type here"></input>
-        <Button text="Search" />
-      </div>
-
-      <Translations list={translations} delete={deleteTranslation} />
-
-      {/* <SearchResult /> */}
+      <SearchForm search={doSearch} />
+      <DisplayTranslations list={translations} result={searchResult} delete={deleteTranslation} searchFor={searchFor} />
 
     </div>
   );
