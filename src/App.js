@@ -12,22 +12,32 @@ function AddTranslationForm(props) {
     <>
       <h1>Add your translation in the form below</h1>
       <form onSubmit={props.save}>
-        <label htmlFor="swedish-word">Swedish word</label>
-        <input 
-          name="swedish-word" 
-          placeholder="Hej"
-          value={props.swedish}
-          onChange={props.setSwedish}
-        />
+        <div className="row">
+          <label htmlFor="swedish-word">Swedish word</label>
+          <input 
+            name="swedish-word" 
+            placeholder="Hej"
+            value={props.swedish}
+            onChange={props.setSwedish}
+            required
+          />
+        </div>
+        
+        <div className="row">
+          <label htmlFor="english-word">English word</label>
+          <input 
+            name="english-word" 
+            placeholder="Hello"
+            value={props.english}
+            onChange={props.setEnglish}
+            required
+          />
+        </div>
 
-        <label htmlFor="english-word">English word</label>
-        <input 
-          name="english-word" 
-          placeholder="Hello"
-          value={props.english}
-          onChange={props.setEnglish}
-        />
-        <Button type="submit" text="Add translation" />
+        <div className="row">
+          <Button type="submit" text="Add translation" />
+        </div>
+        
       </form>
     </>
   );
@@ -36,37 +46,35 @@ function AddTranslationForm(props) {
 function SearchForm(props){
   const searchInput = useRef();
   return (
-    <div className="searchArea">
-      <label htmlFor="search">Search for translations</label>
-      <input 
-        ref={searchInput}
-        name="search" 
-        type="text" 
-        placeholder="Type here" 
-        onChange={props.search}
-        onMouseOver={() => searchInput.current.focus()}
-        onMouseOut={() => searchInput.current.blur()}
-      />
+    <div className="search">
+      <div className="row">
+        <label htmlFor="search">Search translation</label>
+        <input 
+          ref={searchInput}
+          name="search" 
+          type="text" 
+          placeholder="Type here" 
+          onChange={props.search}
+          onMouseOver={() => searchInput.current.focus()}
+          onMouseOut={() => searchInput.current.blur()}
+        />
+      </div>
     </div>
   );
 }
 
 function TranslationsList(props) {
-  const liRef = useRef(null);
-
   return(
-    <ul itemID="translation-list">
-      {props.translations.map( (translation) => (
-        <li 
-          key={translation.id}
-          ref={liRef}
-          // onMouseOver={ () => { console.log('mouse over', liRef.current) } }
-          // onMouseOut={ () => { console.log('mouse out', liRef.current) } }
-        >
-          <span>{translation.swedish}</span> = <span>{translation.english}</span> <button id={translation.id} onClick={props.delete}>Delete</button>
-        </li>
-      ))}
-    </ul>
+    <>
+    <h2>Translations</h2>
+      <ul itemID="translation-list">
+        {props.translations.map( (translation) => (
+          <li key={translation.id} className="row" >
+            <span>{translation.swedish} = {translation.english}</span> <button id={translation.id} onClick={props.delete}>Delete</button>
+          </li>
+        ))}
+      </ul>
+    </>
   );
 }
 
@@ -74,17 +82,30 @@ function DisplayTranslations(props){
   if(props.searchQuery !== ''){
     if(props.result.length >= 1){
       return (
-        <TranslationsList translations={props.result} delete={props.delete} />
+        <>
+          <SearchForm search={props.search} />
+          <TranslationsList translations={props.result} delete={props.delete} />
+        </>
       );
     } else {
       return (
-        <p>Sorry, no match. Try another search.</p>
+        <>
+          <SearchForm search={props.search} />
+          <p>Sorry, no match. Try another search.</p>
+        </>
       );
     }
   }
-  return (
-    <TranslationsList translations={props.list} delete={props.delete}/>
-  );
+  if(props.list.length >= 1){
+    return (
+      <>
+        <SearchForm search={props.search} />
+        <TranslationsList translations={props.list} delete={props.delete}/>
+      </>
+    );
+  }
+  return null;
+  
 }
 
 function App() {
@@ -145,9 +166,7 @@ function App() {
         save={saveTranslation}
       />
       
-      <SearchForm search={handleSearchChange} />
-      
-      <DisplayTranslations list={translations} result={searchResults} delete={deleteTranslation} searchQuery={searchQuery} />
+      <DisplayTranslations search={handleSearchChange} list={translations} result={searchResults} delete={deleteTranslation} searchQuery={searchQuery} />
 
     </div>
   );
