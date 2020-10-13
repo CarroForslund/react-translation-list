@@ -116,7 +116,7 @@ function App() {
   let [ searchQuery, setSearchQuery ] = useState('');
   const [ searchResults, setSearchResults ] = useState([]);
   const handleSearchChange = event => {
-    setSearchQuery(event.target.value);
+    setSearchQuery(event.target.value.toLowerCase());
   };
 
   useEffect(() => {
