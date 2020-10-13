@@ -7,56 +7,83 @@ function Button(props){
   );
 }
 
+function AddTranslationForm(props) {
+  return (
+    <>
+      <h1>Add your translation in the form below</h1>
+      <form onSubmit={props.save}>
+        <label htmlFor="swedish-word">Swedish word</label>
+        <input 
+          name="swedish-word" 
+          placeholder="Hej"
+          value={props.swedish}
+          onChange={props.setSwedish}
+        />
+
+        <label htmlFor="english-word">English word</label>
+        <input 
+          name="english-word" 
+          placeholder="Hello"
+          value={props.english}
+          onChange={props.setEnglish}
+        />
+        <Button type="submit" text="Add translation" />
+      </form>
+    </>
+  );
+}
+
 function SearchForm(props){
+  const searchInput = useRef();
   return (
     <div className="searchArea">
       <label htmlFor="search">Search for translations</label>
-      <input name="search" type="text" placeholder="Type here" onChange={props.search}></input>
+      <input 
+        ref={searchInput}
+        name="search" 
+        type="text" 
+        placeholder="Type here" 
+        onChange={props.search}
+        onMouseOver={() => searchInput.current.focus()}
+        onMouseOut={() => searchInput.current.blur()}
+      />
     </div>
   );
 }
 
-// function Translations(props) {
-//   return(
-//     <div itemID="translation-list">
-//       {props.list.map( (translation) => (
-        
-//       <li key={translation.id}><span>{translation.id} {translation.swedish}</span> = <span>{translation.english}</span> <span id={translation.id} className="delete" onClick={props.delete}>X</span></li>
-//       ))}
-//     </div>
-//   );
-// }
-
-function DisplayTranslations(props){
+function TranslationsList(props) {
   const liRef = useRef(null);
-  if(props.searchFor !== ''){
-    if(props.result !== []){
-      return (
-        <div itemID="translation-list">
-          <p>Display search results here:</p>
-        </div>
-      );
-    } else {
-      return (
-        <p>No match...</p>
-      );
-    }
-  }
-  return (
-    <div itemID="translation-list">
-      {props.list.map( (translation) => (
-        <li
-          key={translation.id} 
+
+  return(
+    <ul itemID="translation-list">
+      {props.translations.map( (translation) => (
+        <li 
+          key={translation.id}
           ref={liRef}
           // onMouseOver={ () => { console.log('mouse over', liRef.current) } }
           // onMouseOut={ () => { console.log('mouse out', liRef.current) } }
         >
-          <span>{translation.swedish}</span> = 
-          <span>{translation.english}</span> 
-          <span id={translation.id} className="delete" onClick={props.delete}>X</span>
+          <span>{translation.swedish}</span> = <span>{translation.english}</span> <button id={translation.id} onClick={props.delete}>Delete</button>
         </li>
       ))}
-    </div>
+    </ul>
+  );
+}
+
+function DisplayTranslations(props){
+  if(props.searchQuery !== ''){
+    if(props.result.length >= 1){
+      return (
+        <TranslationsList translations={props.result} delete={props.delete} />
+      );
+    } else {
+      return (
+        <p>Sorry, no match. Try another search.</p>
+      );
+    }
+  }
+  return (
+    <TranslationsList translations={props.list} delete={props.delete}/>
   );
 }
 
@@ -65,18 +92,21 @@ function App() {
   const [ translations, setTranslations ] = useState([]);
   const [ swedishWord, setSwedishWord ] = useState('');
   const [ englishWord, setEnglishWord ] = useState('');
-  let [ searchFor, setSearchFor ] = useState('');
-  const [ searchResult, setSearchResult ] = useState([]);
+  let [ searchQuery, setSearchQuery ] = useState('');
+  const [ searchResults, setSearchResults ] = useState([]);
+  const handleSearchChange = event => {
+    setSearchQuery(event.target.value);
+  };
 
   useEffect(() => {
     let swedish, english;
     const results = translations.filter(translation => {
       swedish = translation.swedish.toLowerCase();
       english = translation.english.toLowerCase();
-      swedish.includes(searchFor) || english.includes(searchFor);
+      return swedish.includes(searchQuery) || english.includes(searchQuery);
     });
-    setSearchResult(results);
-  }, [translations, searchFor]);
+    setSearchResults(results);
+  }, [translations, searchQuery]);
 
   function updateSwedishWord(e){
     setSwedishWord(e.target.value);
@@ -101,45 +131,23 @@ function App() {
 
   function deleteTranslation(e){
     const id = e.target.getAttribute("id");
-    setTranslations(translations.filter(translation => translation.id !== parseInt(id))); // TODO: Remove warnings!
-  }
-
-  function doSearch(e){
-    if (e.target.value.length >= 1) {
-      setSearchFor(searchFor = e.target.value.toLowerCase());
-    } else {
-      setSearchFor(searchFor =  '');
-    }
+    setTranslations(translations.filter(translation => translation.id !== parseInt(id)));
   }
 
   return (
     <div className="wrapper">
 
-      {/* <AddTranslationForm /> */}
-      <div className="add-area">
-        <h1>Add your translation in the form below</h1>
-        <form onSubmit={saveTranslation}>
-          <label htmlFor="swedish-word">Swedish word</label>
-          <input 
-            name="swedish-word" 
-            placeholder="Häst"
-            value={swedishWord}
-            onChange={updateSwedishWord}
-          />
-
-          <label htmlFor="english-word">English word</label>
-          <input 
-            name="english-word" 
-            placeholder="Horse"
-            value={englishWord}
-            onChange={updateEnglishWord}
-          />
-          <Button type="submit" text="Add translation" />
-        </form>
-      </div>
+      <AddTranslationForm 
+        swedish={swedishWord} 
+        setSwedish={updateSwedishWord}
+        english={englishWord}
+        setEnglish={updateEnglishWord}
+        save={saveTranslation}
+      />
       
-      <SearchForm search={doSearch} />
-      <DisplayTranslations list={translations} result={searchResult} delete={deleteTranslation} searchFor={searchFor} />
+      <SearchForm search={handleSearchChange} />
+      
+      <DisplayTranslations list={translations} result={searchResults} delete={deleteTranslation} searchQuery={searchQuery} />
 
     </div>
   );
