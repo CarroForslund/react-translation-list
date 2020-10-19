@@ -1,6 +1,6 @@
 import React from 'react';
-import TranslationsList from './components/translationlist';
-import SearchForm from './components/searchform';
+import TranslationsList from './translationlist';
+import SearchForm from './searchform';
 
 function DisplayTranslations(props){
     if(props.searchQuery !== ''){
