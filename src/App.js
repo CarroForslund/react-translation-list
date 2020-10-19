@@ -1,112 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
+import AddTranslationForm from './components/translationform';
+import DisplayTranslations from './components/displaytranslations';
 import './App.css';
-
-function Button(props){
-  return (
-    <button>{props.text}</button>
-  );
-}
-
-function AddTranslationForm(props) {
-  return (
-    <>
-      <h1>Add your translation in the form below</h1>
-      <form onSubmit={props.save}>
-        <div className="row">
-          <label htmlFor="swedish-word">Swedish word</label>
-          <input 
-            name="swedish-word" 
-            placeholder="Hej"
-            value={props.swedish}
-            onChange={props.setSwedish}
-            required
-          />
-        </div>
-        
-        <div className="row">
-          <label htmlFor="english-word">English word</label>
-          <input 
-            name="english-word" 
-            placeholder="Hello"
-            value={props.english}
-            onChange={props.setEnglish}
-            required
-          />
-        </div>
-
-        <div className="row">
-          <Button type="submit" text="Add translation" />
-        </div>
-        
-      </form>
-    </>
-  );
-}
-
-function SearchForm(props){
-  const searchInput = useRef();
-  return (
-    <div className="search">
-      <div className="row">
-        <label htmlFor="search">Search translation</label>
-        <input 
-          ref={searchInput}
-          name="search" 
-          type="text" 
-          placeholder="Type here" 
-          onChange={props.search}
-          onMouseOver={() => searchInput.current.focus()}
-          onMouseOut={() => searchInput.current.blur()}
-        />
-      </div>
-    </div>
-  );
-}
-
-function TranslationsList(props) {
-  return(
-    <>
-    <h2>Translations</h2>
-      <ul itemID="translation-list">
-        {props.translations.map( (translation) => (
-          <li key={translation.id} className="row" >
-            <span>{translation.swedish} = {translation.english}</span> <button id={translation.id} onClick={props.delete}>Delete</button>
-          </li>
-        ))}
-      </ul>
-    </>
-  );
-}
-
-function DisplayTranslations(props){
-  if(props.searchQuery !== ''){
-    if(props.result.length >= 1){
-      return (
-        <>
-          <SearchForm search={props.search} />
-          <TranslationsList translations={props.result} delete={props.delete} />
-        </>
-      );
-    } else {
-      return (
-        <>
-          <SearchForm search={props.search} />
-          <p>Sorry, no match. Try another search.</p>
-        </>
-      );
-    }
-  }
-  if(props.list.length >= 1){
-    return (
-      <>
-        <SearchForm search={props.search} />
-        <TranslationsList translations={props.list} delete={props.delete}/>
-      </>
-    );
-  }
-  return null;
-  
-}
 
 function App() {
   const [ translationID, setTranslationID ] = useState(0);
@@ -139,7 +34,7 @@ function App() {
 
   function saveTranslation(e){
     e.preventDefault();
-    setTranslationID(translationID + 1); //Why doesn't this one add up? Why do I need to add 1 again below?
+    setTranslationID(translationID + 1);
     const newTranslation = [{
       id: translationID + 1,
       swedish: swedishWord,
